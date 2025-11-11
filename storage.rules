@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // תמונות משתמשים - רק הבעלים יכול להעלות/למחוק
+    match /users/{userId}/photos/{allPaths=**} {
+      allow read: if true; // כולם יכולים לקרוא תמונות
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024 // מקסימום 5MB
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ברירת מחדל - אין גישה
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

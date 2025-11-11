@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // פונקציות עזר
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidUser(uid) {
+      return uid != null && uid.size() >= 6;
+    }
+
+    // Users - פרופילים מלאים (מוגבל לבעלים)
+    match /users/{userId} {
+      allow get: if isUser(userId);
+      allow list: if false; // אין ליסטינג
+      allow create: if isUser(userId) && isValidUser(userId);
+      allow update: if isUser(userId)
+        && !('plan' in request.resource.data || get(/databases/$(database)/documents/users/$(userId)).data.plan == request.resource.data.plan)
+        && !('status' in request.resource.data || get(/databases/$(database)/documents/users/$(userId)).data.status == request.resource.data.status);
+      allow delete: if isUser(userId);
+    }
+
+    // Public Profiles - אינדקס ציבורי (קריאה חופשית, כתיבה רק שרת)
+    match /public_profiles/{userId} {
+      allow read: if isSignedIn();
+      allow write: if false; // רק Cloud Functions
+    }
+
+    // Matches - מנוהל ע"י שרת בלבד
+    match /matches/{matchId} {
+      allow read: if isSignedIn()
+        && request.auth.uid in resource.data.users;
+      allow write: if false; // רק Cloud Functions יוצרות/מעדכנות
+    }
+
+    // Conversation Starters (subcollection of matches)
+    match /matches/{matchId}/starters/{starterId} {
+      allow read: if isSignedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+      allow write: if false; // רק Cloud Functions
+    }
+
+    // Messages (subcollection)
+    match /messages/{matchId}/items/{messageId} {
+      allow read: if isSignedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
+
+      allow create: if isSignedIn()
+        && request.resource.data.from == request.auth.uid
+        && request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users
+        && get(/databases/$(database)/documents/matches/$(matchId)).data.state == 'active'
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+
+      allow update, delete: if false; // אי אפשר לערוך/למחוק הודעות
+    }
+
+    // Likes (subcollection)
+    match /likes/{userId}/targets/{targetUserId} {
+      allow read: if isUser(userId);
+      allow write: if isUser(userId)
+        && request.resource.data.value in ['like', 'pass']
+        && request.resource.data.keys().hasOnly(['value', 'createdAt']);
+    }
+
+    // Reports - מדווח יכול לקרוא רק את שלו, שרת מנהל
+    match /reports/{reportId} {
+      allow create: if isSignedIn()
+        && request.resource.data.byUserId == request.auth.uid;
+      allow read: if isSignedIn()
+        && resource.data.byUserId == request.auth.uid;
+      allow update, delete: if false; // ניהול ע"י אדמין/שרת בלבד
+    }
+
+    // System config - קריאה לכולם, כתיבה רק שרת
+    match /system/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false; // מנוהל ע"י שרת בלבד
+    }
+  }
+}

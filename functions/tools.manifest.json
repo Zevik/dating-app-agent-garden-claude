@@ -1,0 +1,139 @@
+{
+  "name": "dating-app-tools",
+  "version": "1.0.0",
+  "description": "Agent Garden Tools for Dating App",
+  "tools": [
+    {
+      "name": "readUserProfile",
+      "description": "קורא פרופיל משתמש מלא מ-Firestore",
+      "input_schema": { "$ref": "tools.schema.json#/properties/readUserProfile.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/readUserProfile.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/readUserProfile"
+      }
+    },
+    {
+      "name": "queryCandidates",
+      "description": "מחזיר רשימת מועמדים מתאימים לפי פילטרים (מין, גיל, מרחק)",
+      "input_schema": { "$ref": "tools.schema.json#/properties/queryCandidates.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/queryCandidates.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/queryCandidates"
+      }
+    },
+    {
+      "name": "scoreCandidate",
+      "description": "מחשב ציון התאמה למועמד מסוים (rule-based)",
+      "input_schema": { "$ref": "tools.schema.json#/properties/scoreCandidate.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/scoreCandidate.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/scoreCandidate"
+      }
+    },
+    {
+      "name": "createOrQueueMatch",
+      "description": "יוצר התאמה חדשה בין שני משתמשים (עם אכיפת קשר אחד בכל פעם)",
+      "input_schema": { "$ref": "tools.schema.json#/properties/createOrQueueMatch.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/createOrQueueMatch.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/createOrQueueMatch"
+      }
+    },
+    {
+      "name": "getActiveMatch",
+      "description": "מחזיר את ההתאמה הפעילה של משתמש (או null אם אין)",
+      "input_schema": { "$ref": "tools.schema.json#/properties/getActiveMatch.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/getActiveMatch.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/getActiveMatch"
+      }
+    },
+    {
+      "name": "closeMatch",
+      "description": "סוגר התאמה פעילה",
+      "input_schema": { "$ref": "tools.schema.json#/properties/closeMatch.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/closeMatch.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/closeMatch"
+      }
+    },
+    {
+      "name": "moderateText",
+      "description": "בודק טקסט למילים אסורות, ספאם ותוכן בלתי הולם",
+      "input_schema": { "$ref": "tools.schema.json#/properties/moderateText.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/moderateText.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/moderateText"
+      }
+    },
+    {
+      "name": "storeMessage",
+      "description": "שומר הודעה חדשה (עם moderation אוטומטי)",
+      "input_schema": { "$ref": "tools.schema.json#/properties/storeMessage.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/storeMessage.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/storeMessage"
+      }
+    },
+    {
+      "name": "extractSharedInterests",
+      "description": "מחלץ תחומי עניין משותפים בין שני משתמשים",
+      "input_schema": { "$ref": "tools.schema.json#/properties/extractSharedInterests.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/extractSharedInterests.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/extractSharedInterests"
+      }
+    },
+    {
+      "name": "embedText",
+      "description": "יוצר embedding לטקסט (stub - שלב II)",
+      "input_schema": { "$ref": "tools.schema.json#/properties/embedText.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/embedText.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/embedText"
+      }
+    },
+    {
+      "name": "storeEmbedding",
+      "description": "שומר embedding במסמך המשתמש",
+      "input_schema": { "$ref": "tools.schema.json#/properties/storeEmbedding.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/storeEmbedding.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/storeEmbedding"
+      }
+    },
+    {
+      "name": "sendPush",
+      "description": "שולח התראת FCM למכשיר",
+      "input_schema": { "$ref": "tools.schema.json#/properties/sendPush.input" },
+      "output_schema": { "$ref": "tools.schema.json#/properties/sendPush.output" },
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "url": "https://REGION-PROJECT_ID.cloudfunctions.net/sendPush"
+      }
+    }
+  ]
+}

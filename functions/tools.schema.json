@@ -1,0 +1,308 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tools.schema.json",
+  "title": "Agent Tools Schemas - Dating App",
+  "description": "JSON Schema definitions for all Cloud Functions tools",
+  "type": "object",
+  "definitions": {
+    "UserId": {
+      "type": "string",
+      "minLength": 6,
+      "description": "מזהה ייחודי של משתמש"
+    },
+    "MatchId": {
+      "type": "string",
+      "minLength": 8,
+      "description": "מזהה ייחודי של התאמה"
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "חותמת זמן ISO 8601"
+    },
+    "Geo": {
+      "type": "object",
+      "properties": {
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lng": { "type": "number", "minimum": -180, "maximum": 180 }
+      },
+      "required": ["lat", "lng"],
+      "additionalProperties": false,
+      "description": "קואורדינטות גיאוגרפיות"
+    },
+    "Prefs": {
+      "type": "object",
+      "properties": {
+        "ageMin": { "type": "integer", "minimum": 18, "maximum": 99 },
+        "ageMax": { "type": "integer", "minimum": 18, "maximum": 99 },
+        "maxDistanceKm": { "type": "integer", "minimum": 1, "maximum": 500 }
+      },
+      "required": ["ageMin", "ageMax", "maxDistanceKm"],
+      "additionalProperties": false,
+      "description": "העדפות חיפוש"
+    },
+    "Candidate": {
+      "type": "object",
+      "properties": {
+        "userId": { "$ref": "#/definitions/UserId" },
+        "name": { "type": "string" },
+        "age": { "type": "integer", "minimum": 18 },
+        "city": { "type": "string" },
+        "distanceKm": { "type": "number", "minimum": 0 },
+        "interests": { "type": "array", "items": { "type": "string" }, "maxItems": 25 },
+        "photos": { "type": "array", "items": { "type": "string", "format": "uri" }, "maxItems": 6 }
+      },
+      "required": ["userId", "age"],
+      "additionalProperties": true,
+      "description": "אובייקט מועמד להתאמה"
+    },
+    "Score": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reasons": { "type": "array", "items": { "type": "string", "maxLength": 200 }, "maxItems": 5 }
+      },
+      "required": ["value"],
+      "additionalProperties": false,
+      "description": "ציון התאמה עם נימוקים"
+    }
+  },
+  "properties": {
+    "readUserProfile.input": {
+      "type": "object",
+      "properties": {
+        "userId": { "$ref": "#/definitions/UserId" }
+      },
+      "required": ["userId"],
+      "description": "קריאת פרופיל משתמש"
+    },
+    "readUserProfile.output": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "userId": { "$ref": "#/definitions/UserId" },
+            "name": { "type": "string" },
+            "age": { "type": "integer" },
+            "gender": { "type": "string", "enum": ["male", "female", "other"] },
+            "seeking": { "type": "string", "enum": ["male", "female", "other"] },
+            "location": { "$ref": "#/definitions/Geo" },
+            "city": { "type": "string" },
+            "bio": { "type": "string", "maxLength": 500 },
+            "interests": { "type": "array", "items": { "type": "string" }, "maxItems": 25 },
+            "prefs": { "$ref": "#/definitions/Prefs" },
+            "plan": { "type": "string", "enum": ["free", "premium", "vip"] }
+          },
+          "required": ["userId", "age", "prefs"]
+        }
+      },
+      "required": ["user"],
+      "additionalProperties": false
+    },
+    "queryCandidates.input": {
+      "type": "object",
+      "properties": {
+        "userId": { "$ref": "#/definitions/UserId" },
+        "filters": {
+          "type": "object",
+          "properties": {
+            "gender": { "type": "string" },
+            "ageMin": { "type": "integer" },
+            "ageMax": { "type": "integer" },
+            "maxDistanceKm": { "type": "integer" },
+            "limit": { "type": "integer", "minimum": 1, "maximum": 50 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["userId"],
+      "additionalProperties": false,
+      "description": "שאילתת מועמדים מתאימים"
+    },
+    "queryCandidates.output": {
+      "type": "object",
+      "properties": {
+        "candidates": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Candidate" },
+          "maxItems": 50
+        }
+      },
+      "required": ["candidates"],
+      "additionalProperties": false
+    },
+    "scoreCandidate.input": {
+      "type": "object",
+      "properties": {
+        "sourceUser": { "$ref": "#/definitions/UserId" },
+        "candidate": { "$ref": "#/definitions/Candidate" }
+      },
+      "required": ["sourceUser", "candidate"],
+      "additionalProperties": false,
+      "description": "חישוב ציון התאמה למועמד"
+    },
+    "scoreCandidate.output": {
+      "type": "object",
+      "properties": {
+        "score": { "$ref": "#/definitions/Score" }
+      },
+      "required": ["score"],
+      "additionalProperties": false
+    },
+    "createOrQueueMatch.input": {
+      "type": "object",
+      "properties": {
+        "userA": { "$ref": "#/definitions/UserId" },
+        "userB": { "$ref": "#/definitions/UserId" },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["userA", "userB"],
+      "additionalProperties": false,
+      "description": "יצירת התאמה חדשה (עם guard של קשר אחד)"
+    },
+    "createOrQueueMatch.output": {
+      "type": "object",
+      "properties": {
+        "matchId": { "$ref": "#/definitions/MatchId" },
+        "state": { "type": "string", "enum": ["pending", "active", "closed"] }
+      },
+      "required": ["matchId", "state"],
+      "additionalProperties": false
+    },
+    "getActiveMatch.input": {
+      "type": "object",
+      "properties": {
+        "userId": { "$ref": "#/definitions/UserId" }
+      },
+      "required": ["userId"],
+      "description": "קבלת ההתאמה הפעילה של משתמש"
+    },
+    "getActiveMatch.output": {
+      "type": "object",
+      "properties": {
+        "matchId": { "type": ["string", "null"] },
+        "state": { "type": ["string", "null"] }
+      },
+      "required": ["matchId"],
+      "additionalProperties": false
+    },
+    "closeMatch.input": {
+      "type": "object",
+      "properties": {
+        "matchId": { "$ref": "#/definitions/MatchId" },
+        "reason": { "type": "string", "maxLength": 200 }
+      },
+      "required": ["matchId"],
+      "description": "סגירת התאמה"
+    },
+    "closeMatch.output": {
+      "type": "object",
+      "properties": {
+        "ok": { "type": "boolean" }
+      },
+      "required": ["ok"],
+      "additionalProperties": false
+    },
+    "moderateText.input": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "context": { "type": "string" }
+      },
+      "required": ["text"],
+      "description": "בדיקת מודרציה לטקסט"
+    },
+    "moderateText.output": {
+      "type": "object",
+      "properties": {
+        "allowed": { "type": "boolean" },
+        "labels": { "type": "array", "items": { "type": "string" }, "maxItems": 10 }
+      },
+      "required": ["allowed"]
+    },
+    "storeMessage.input": {
+      "type": "object",
+      "properties": {
+        "matchId": { "$ref": "#/definitions/MatchId" },
+        "from": { "$ref": "#/definitions/UserId" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      },
+      "required": ["matchId", "from", "text"],
+      "description": "שמירת הודעה חדשה (עם moderation)"
+    },
+    "storeMessage.output": {
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string" },
+        "status": { "type": "string", "enum": ["sent", "delivered", "read"] }
+      },
+      "required": ["messageId"]
+    },
+    "extractSharedInterests.input": {
+      "type": "object",
+      "properties": {
+        "userA": { "$ref": "#/definitions/UserId" },
+        "userB": { "$ref": "#/definitions/UserId" }
+      },
+      "required": ["userA", "userB"],
+      "description": "חילוץ תחומי עניין משותפים"
+    },
+    "extractSharedInterests.output": {
+      "type": "object",
+      "properties": {
+        "shared": { "type": "array", "items": { "type": "string" }, "maxItems": 20 }
+      },
+      "required": ["shared"]
+    },
+    "embedText.input": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "minLength": 3, "maxLength": 2000 }
+      },
+      "required": ["text"],
+      "description": "יצירת embedding לטקסט (stub)"
+    },
+    "embedText.output": {
+      "type": "object",
+      "properties": {
+        "vector": { "type": "array", "items": { "type": "number" }, "minItems": 256 }
+      },
+      "required": ["vector"]
+    },
+    "storeEmbedding.input": {
+      "type": "object",
+      "properties": {
+        "userId": { "$ref": "#/definitions/UserId" },
+        "vector": { "type": "array", "items": { "type": "number" }, "minItems": 256 }
+      },
+      "required": ["userId", "vector"],
+      "description": "שמירת embedding במסמך המשתמש"
+    },
+    "storeEmbedding.output": {
+      "type": "object",
+      "properties": {
+        "ok": { "type": "boolean" }
+      },
+      "required": ["ok"]
+    },
+    "sendPush.input": {
+      "type": "object",
+      "properties": {
+        "token": { "type": "string" },
+        "title": { "type": "string", "maxLength": 80 },
+        "body": { "type": "string", "maxLength": 140 },
+        "data": { "type": "object", "additionalProperties": { "type": ["string", "number", "boolean"] } }
+      },
+      "required": ["token", "title", "body"],
+      "description": "שליחת התראת FCM"
+    },
+    "sendPush.output": {
+      "type": "object",
+      "properties": {
+        "ok": { "type": "boolean" }
+      },
+      "required": ["ok"]
+    }
+  }
+}
