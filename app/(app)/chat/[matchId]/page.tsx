@@ -382,7 +382,7 @@ export default function ChatPage() {
               </Button>
               <Button
                 onClick={handleCloseMatch}
-                variant="destructive"
+                variant="danger"
                 className="flex-1"
               >
                 סיים שיחה
