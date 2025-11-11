@@ -281,7 +281,7 @@ export default function ProfilePage() {
               </p>
             </div>
             {profile.plan === 'free' && (
-              <Button variant="default" onClick={() => router.push('/subscription')}>
+              <Button variant="primary" onClick={() => router.push('/subscription')}>
                 שדרג
               </Button>
             )}
@@ -291,7 +291,7 @@ export default function ProfilePage() {
         {/* כפתורים */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Button
-            variant="default"
+            variant="primary"
             className="w-full"
             onClick={() => router.push('/profile/edit/bio')}
           >
