@@ -316,7 +316,7 @@ export default function ProfilePage() {
           >
             חזור לחיפוש
           </Button>
-          <Button variant="destructive" className="w-full" onClick={handleLogout}>
+          <Button variant="danger" className="w-full" onClick={handleLogout}>
             <LogOut className="h-4 w-4 ml-2" />
             התנתק
           </Button>

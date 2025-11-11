@@ -411,7 +411,7 @@ export default function SettingsPage() {
 
             <Button
               onClick={() => setShowDeleteConfirm(true)}
-              variant="destructive"
+              variant="danger"
               className="w-full justify-center"
             >
               <Trash2 className="h-4 w-4 ml-2" />
@@ -471,7 +471,7 @@ export default function SettingsPage() {
               </Button>
               <Button
                 onClick={handleDeleteAccount}
-                variant="destructive"
+                variant="danger"
                 className="flex-1"
                 disabled={deleteConfirmText !== 'מחק' || saving}
               >
